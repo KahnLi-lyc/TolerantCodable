@@ -62,7 +62,7 @@ public struct LYJSONCoder: Sendable {
 
     /// 解码并汇总兼容诊断；语法错误、根结构不符及未包装字段错误仍然抛出。
     public func decode<T: Decodable>(_ type: T.Type, from data: Data, context: LYCodingContext = .init()) throws -> T {
-        try run(type, context: context) { decoder in try decoder.decode(type, from: data) }
+        try decodeWithDiagnostics(type, from: data, context: context).value
     }
 
     /// 解码 UTF-8 JSON 文本；复用 Data 入口的校验与诊断。
@@ -70,16 +70,29 @@ public struct LYJSONCoder: Sendable {
         try decode(type, from: Data(string.utf8), context: context)
     }
 
-    /// 只解码 `path` 指向的子节点，例如 `"data.items"`；单次解析，不经过 Any 中转。
-    /// 路径只支持对象键；某层缺失或不是对象时抛出带路径的 DecodingError。
+    /// 只解码 `path` 指向的子节点，例如 `"data.items"` 或 `"data.items.0.name"`；单次解析，不经过 Any 中转。
+    /// 纯数字段遇到数组时按下标进入，遇到对象时按键进入；某层缺失、越界或种类不符时抛出带路径的 DecodingError。
+    /// 使用 keyDecodingStrategy（如 `.snakeCase`）时，路径段匹配的是转换后的键。
     public func decode<T: Decodable>(
         _ type: T.Type,
         from data: Data,
         atPath path: String,
         context: LYCodingContext = .init()
     ) throws -> T {
+        try decodeWithDiagnostics(type, from: data, atPath: path, context: context).value
+    }
+
+    /// 解码并同时返回本次的诊断（已截断到 diagnosticLimit）；`onDiagnostic` 照常回调。
+    public func decodeWithDiagnostics<T: Decodable>(
+        _ type: T.Type,
+        from data: Data,
+        atPath path: String = "",
+        context: LYCodingContext = .init()
+    ) throws -> (value: T, diagnostics: [LYDecodingDiagnostic]) {
+        guard !path.isEmpty else {
+            return try run(type, context: context) { decoder in try decoder.decode(type, from: data) }
+        }
         let keys = path.split(separator: ".", omittingEmptySubsequences: false).map(String.init)
-        guard !path.isEmpty else { return try decode(type, from: data, context: context) }
         guard !keys.contains(where: \.isEmpty) else {
             throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "Invalid key path"))
         }
@@ -89,16 +102,61 @@ public struct LYJSONCoder: Sendable {
         }
     }
 
-    private func run<T>(_ type: T.Type, context: LYCodingContext, _ body: (JSONDecoder) throws -> T) throws -> T {
+    /// 契约测试用：解码成功但出现任何兼容处理（转换、兜底、丢弃）时抛出 `LYUnexpectedDiagnosticsError`。
+    /// 适合在 CI 中用接口 fixture 发现后端字段漂移；结构错误仍按原样抛出。
+    public func decodeExpectingNoDiagnostics<T: Decodable>(
+        _ type: T.Type,
+        from data: Data,
+        atPath path: String = "",
+        context: LYCodingContext = .init()
+    ) throws -> T {
+        let result = try decodeWithDiagnostics(type, from: data, atPath: path, context: context)
+        guard result.diagnostics.isEmpty else { throw LYUnexpectedDiagnosticsError(diagnostics: result.diagnostics) }
+        return result.value
+    }
+
+    private func run<T>(
+        _ type: T.Type,
+        context: LYCodingContext,
+        _ body: (JSONDecoder) throws -> T
+    ) throws -> (value: T, diagnostics: [LYDecodingDiagnostic]) {
         let collector = LYDiagnosticCollector(model: String(reflecting: type), context: context, limit: configuration.diagnosticLimit)
         let decoder = configuration.makeDecoder()
         decoder.userInfo[.lyDiagnostics] = collector
-        defer { collector.diagnostics.forEach(configuration.onDiagnostic) }
         do {
-            return try body(decoder)
+            let value = try body(decoder)
+            let diagnostics = collector.diagnostics
+            diagnostics.forEach(configuration.onDiagnostic)
+            return (value, diagnostics)
         } catch {
             collector.recordFailure(error, target: String(reflecting: type))
+            collector.diagnostics.forEach(configuration.onDiagnostic)
             throw error
         }
+    }
+}
+
+/// `decodeExpectingNoDiagnostics` 在解码成功但发生兼容处理时抛出；只携带脱敏诊断。
+public struct LYUnexpectedDiagnosticsError: Error, Sendable, Equatable {
+    /// 本次解码记录的诊断。
+    public let diagnostics: [LYDecodingDiagnostic]
+}
+
+public extension LYCodingConfiguration {
+    /// 服务端使用 snake_case 键时的预设：decoder `.convertFromSnakeCase`，encoder `.convertToSnakeCase`。
+    /// 按路径解码时路径段匹配转换后的驼峰键；可在返回值上继续修改 `onDiagnostic` 等属性。
+    static var snakeCase: LYCodingConfiguration {
+        LYCodingConfiguration(
+            makeDecoder: {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                return decoder
+            },
+            makeEncoder: {
+                let encoder = JSONEncoder()
+                encoder.keyEncodingStrategy = .convertToSnakeCase
+                return encoder
+            }
+        )
     }
 }

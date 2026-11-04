@@ -174,7 +174,7 @@ func lyDecimal(_ text: String) -> Decimal? {
 }
 
 /// 整数转换始终走 Decimal，保留 Int64 高位并在截断后检查边界。
-private func lyInteger<T: FixedWidthInteger>(_ value: Decimal, _: T.Type) -> T? {
+func lyInteger<T: FixedWidthInteger>(_ value: Decimal, _: T.Type) -> T? {
     var source = value
     var rounded = Decimal()
     NSDecimalRound(&rounded, &source, 0, value < 0 ? .up : .down)
