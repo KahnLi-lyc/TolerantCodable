@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 (Unreleased)
+## 0.1.0 (2026-11-04)
 
 首个版本，移植自 Club Circle iOS 客户端中经生产验证的 Coding 工具。
 
