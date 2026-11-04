@@ -12,7 +12,7 @@
 ## 2. 语义原则
 
 1. **默认严格**：未显式包装的字段保持 Codable 原有语义，结构错误必须抛出。
-2. **显式容错**：只有 `@LYDefault`、`@LYLossyArray`、`@LYFlexibleDate`、`LYUnknownCaseDecodable` 会兜底；兜底值不能伪装成真实业务取值（未知枚举必须落到 `unknownCase`）。
+2. **显式容错**：只有 `@LYDefault`、`@LYLossyArray`、`@LYLossyDictionary`、`@LYLossyOptional`、`@LYFlexibleDate`、`LYUnknownCaseDecodable` 会兜底；兜底值不能伪装成真实业务取值（未知枚举必须落到 `unknownCase`）。`LYJSONValue` 是严格解码的，不属于兜底。`LYScalar` 的转换规则必须与 `@LYDefault` 一致，以 `ScalarTests` 为准。
 3. **可诊断**：每次兼容处理都通过 `LYDiagnosticSink` 记录类型、路径和受控原因码；诊断不得包含原始值或 `debugDescription`。
 4. **失败抛错**：便捷转换方法失败时抛出错误，不返回 nil 吞掉原因。
 5. 快速路径只是性能优化，任意输入下的结果和诊断必须与兼容路径一致（见 `FastPathTests`）。
@@ -28,5 +28,6 @@
 
 - 任何行为变更都要补 `Tests/TolerantCodableTests` 中的用例；修复缺陷先写能复现的失败用例。
 - 提交前运行：`swift test`、iOS Simulator 上的 `xcodebuild test -scheme TolerantCodable`、`swiftformat --lint .`。
+- 改动公开 API 时同步更新 `Examples/`；修改 `Examples/project.yml` 后用 `xcodegen generate` 重新生成工程并一起提交。
 - 性能相关改动在 `../CodableBenchmark` 重跑并在 PR 中附结果。
 - 提交信息使用 `feat:`、`fix:`、`test:`、`docs:`、`refactor:`、`chore:` 前缀。
