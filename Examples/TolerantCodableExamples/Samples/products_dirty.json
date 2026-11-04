@@ -1,0 +1,23 @@
+[
+  {
+    "id": "p1",
+    "price": "19.9",
+    "onSale": "1",
+    "tags": ["gift", 3, null, "flower"],
+    "stock": { "shanghai": 3, "beijing": "many" },
+    "rating": "good",
+    "updatedAt": 1762245000000,
+    "status": "archived"
+  },
+  {
+    "id": "p2",
+    "title": 2026,
+    "price": null,
+    "onSale": "maybe",
+    "tags": null,
+    "stock": [1, 2],
+    "rating": null,
+    "updatedAt": "2026-11-01 00:00:00",
+    "status": "draft"
+  }
+]

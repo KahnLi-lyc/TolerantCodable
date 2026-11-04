@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "page": {
+      "total": 2,
+      "items": [
+        { "id": "p1", "title": "Rose", "price": 19.9, "updatedAt": "2026-11-04T08:30:00Z", "status": "active" },
+        { "id": "p2", "title": "Crown", "price": "99", "updatedAt": 1762000000, "status": "sold_out" }
+      ]
+    }
+  }
+}

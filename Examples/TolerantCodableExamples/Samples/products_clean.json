@@ -1,0 +1,23 @@
+[
+  {
+    "id": "p1",
+    "title": "Rose",
+    "price": 19.9,
+    "onSale": true,
+    "tags": ["gift", "flower"],
+    "stock": { "shanghai": 3, "beijing": 5 },
+    "rating": 4.8,
+    "updatedAt": "2026-11-04T08:30:00Z",
+    "status": "active"
+  },
+  {
+    "id": "p2",
+    "title": "Crown",
+    "price": 99,
+    "onSale": false,
+    "tags": [],
+    "stock": {},
+    "updatedAt": "2026-11-01T00:00:00.250Z",
+    "status": "draft"
+  }
+]

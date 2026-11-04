@@ -1,0 +1,62 @@
+name: TolerantCodableExamples
+options:
+  bundleIdPrefix: com.kahnli
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+
+packages:
+  TolerantCodable:
+    path: ..
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGNING_ALLOWED: "NO"
+
+targets:
+  TolerantCodableExamples:
+    type: application
+    platform: iOS
+    sources:
+      - path: TolerantCodableExamples
+    dependencies:
+      - package: TolerantCodable
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kahnli.TolerantCodableExamples
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_KEY_CFBundleDisplayName: TolerantCodable
+        INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        MARKETING_VERSION: "0.2.0"
+        CURRENT_PROJECT_VERSION: "1"
+
+  TolerantCodableExamplesUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    # 新版 XCTest 最低支持 iOS 17；只影响 UI 测试包，示例 App 仍为 iOS 16。
+    deploymentTarget: "17.0"
+    sources:
+      - path: TolerantCodableExamplesUITests
+    dependencies:
+      - target: TolerantCodableExamples
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kahnli.TolerantCodableExamplesUITests
+        GENERATE_INFOPLIST_FILE: "YES"
+        TEST_TARGET_NAME: TolerantCodableExamples
+
+schemes:
+  TolerantCodableExamples:
+    build:
+      targets:
+        TolerantCodableExamples: all
+        TolerantCodableExamplesUITests: [test]
+    test:
+      targets:
+        - TolerantCodableExamplesUITests

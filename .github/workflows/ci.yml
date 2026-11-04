@@ -64,6 +64,22 @@ jobs:
         env:
           NSUnbufferedIO: YES
 
+  examples:
+    name: Build Examples (iOS Simulator)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      # 只编译示例工程，确认公开 API 改动后示例仍可用；UI 测试在本地运行。
+      - name: Build example app
+        run: |
+          xcodebuild build \
+            -project Examples/TolerantCodableExamples.xcodeproj \
+            -scheme TolerantCodableExamples \
+            -destination "generic/platform=iOS Simulator" \
+            CODE_SIGNING_ALLOWED=NO
+        env:
+          NSUnbufferedIO: YES
+
   lint:
     name: SwiftFormat
     runs-on: macos-15

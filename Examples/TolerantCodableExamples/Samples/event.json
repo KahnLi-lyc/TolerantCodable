@@ -1,0 +1,10 @@
+{
+  "type": "gift",
+  "payload": {
+    "giftId": "rose",
+    "count": "3",
+    "sender": { "name": "Kahn", "level": 12, "vip": true },
+    "combo": [1, 2, 3],
+    "extra": null
+  }
+}
