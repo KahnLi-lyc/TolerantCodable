@@ -1,0 +1,16 @@
+# SwiftFormat configuration for TolerantCodable
+--swiftversion 6.0
+--indent 4
+--maxwidth 140
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--commas inline
+--semicolons never
+--trimwhitespace always
+--stripunusedargs closure-only
+--self remove
+--importgrouping testable-bottom
+--header strip
+--disable redundantMemberwiseInit,redundantReturn,wrapMultilineStatementBraces,blankLinesAtStartOfScope,redundantSelf,wrap,wrapArguments,docComments,braces
+--exclude .build
